@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getDefaultEvent, postUserTicket } from "@/controllers";
+import { getDefaultEvent, getPaymentInfo, postUserTicket } from "@/controllers";
 import { getTicketsTypes, getUserTickets }from "@/controllers";
 import { authenticateToken } from "@/middlewares";
 
@@ -9,5 +9,7 @@ eventsRouter.get("/", getDefaultEvent);
 eventsRouter.get("/tickets/types", authenticateToken, getTicketsTypes);
 eventsRouter.get("/tickets", authenticateToken, getUserTickets);
 eventsRouter.post("/tickets", authenticateToken, postUserTicket);
+eventsRouter.get("/payments", authenticateToken, getPaymentInfo);
+
 
 export { eventsRouter };

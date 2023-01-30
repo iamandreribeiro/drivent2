@@ -80,12 +80,39 @@ async function postUserTicket(id: number, ticketTypeId: number) {
   return userTicket;
 }
 
+async function getPaymentInfo(ticketId: number, userId: number) {
+  if(!ticketId) {
+    return 400;
+  }
+
+  const paymentInfo = await eventRepository.findPaymentInfo(ticketId);
+
+  if(!paymentInfo) {
+    return 404
+  }
+
+  const enrollmentId = await eventRepository.findEnrollmentId(userId);
+
+  if(!enrollmentId) {
+    return;
+  }
+
+  const findTicket = await eventRepository.checkTicketByUserId(ticketId);
+
+  if(findTicket.enrollmentId != enrollmentId) {
+    return 401;
+  }
+
+  return paymentInfo;
+}
+
 const eventsService = {
   getFirstEvent,
   isCurrentEventActive,
   getTickets,
   getUserTickets,
-  postUserTicket
+  postUserTicket,
+  getPaymentInfo
 };
 
 export default eventsService;

@@ -62,12 +62,33 @@ async function postUserTicket(id: number, ticketTypeId: number) {
     });
 }
 
+async function findPaymentInfo(id: number) {
+  const payInfo = prisma.payment.findFirst({
+    where: {
+      ticketId: id
+    }
+  })
+
+  return payInfo;
+}
+
+async function checkTicketByUserId(ticketId: number) {
+  return prisma.ticket.findFirst({
+    where: {
+      id: ticketId
+    }
+  })
+}
+
 const eventRepository = {
   findFirst,
   findTickets,
   findUsertickets,
   postUserTicket,
-  getTicketsTypesInfo
+  getTicketsTypesInfo,
+  findPaymentInfo,
+  findEnrollmentId,
+  checkTicketByUserId
 };
 
 export default eventRepository;
