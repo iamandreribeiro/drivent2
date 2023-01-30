@@ -29,10 +29,63 @@ async function getTickets(): Promise<TicketType[]> {
   return tickets;
 }
 
+async function getUserTickets(id: number) {
+  const tickets = await eventRepository.findUsertickets(id);
+
+  if(!tickets) {
+    return
+  }
+
+  const TicketType = await eventRepository.getTicketsTypesInfo(tickets.ticketTypeId);
+  const userTicket = {
+    id: tickets.id,
+    status: tickets.status,
+    ticketTypeId: tickets.ticketTypeId,
+    enrollmentId: tickets.enrollmentId,
+
+    TicketType,
+
+    createdAt: tickets.createdAt,
+    updatedAt: tickets.updatedAt
+  }
+
+  return userTicket;
+}
+
+async function postUserTicket(id: number, ticketTypeId: number) {
+  if(!ticketTypeId) {
+    return 400;
+  }
+
+  const tickets = await eventRepository.postUserTicket(id, ticketTypeId);
+
+  if(!tickets) {
+    return 404;
+  }
+
+  const TicketType = await eventRepository.getTicketsTypesInfo(tickets.ticketTypeId);
+
+  const userTicket = {
+    id: tickets.id,
+    status: tickets.status,
+    ticketTypeId: tickets.ticketTypeId,
+    enrollmentId: tickets.enrollmentId,
+
+    TicketType,
+
+    createdAt: tickets.createdAt,
+    updatedAt: tickets.updatedAt
+  }
+
+  return userTicket;
+}
+
 const eventsService = {
   getFirstEvent,
   isCurrentEventActive,
-  getTickets
+  getTickets,
+  getUserTickets,
+  postUserTicket
 };
 
 export default eventsService;
