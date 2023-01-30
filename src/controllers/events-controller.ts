@@ -3,6 +3,7 @@ import { resolve } from "dns";
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 import { AuthenticatedRequest } from "@/middlewares";
+import { ProcessPayment } from "@prisma/client";
 
 export async function getDefaultEvent(_req: Request, res: Response) {
   try {
@@ -76,6 +77,32 @@ export async function getPaymentInfo(req: AuthenticatedRequest, res: Response) {
 
     return res.status(httpStatus.OK).send(paymentInfo);
   } catch (error) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error.message);
+  }
+}
+
+export async function postPayment(req: AuthenticatedRequest, res: Response) {
+  const userId = req.userId;
+  const payInfo: ProcessPayment = req.body;
+
+  try {
+    const makePayment = await eventsService.insertPayment(payInfo, userId);
+
+    if(makePayment === 400) {
+      return res.sendStatus(httpStatus.BAD_REQUEST);
+    }
+
+    if(makePayment === 404) {
+      return res.sendStatus(httpStatus.NOT_FOUND);
+    }
+
+    if(makePayment === 401) {
+      return res.sendStatus(httpStatus.UNAUTHORIZED);
+    }
+
+    return res.status(httpStatus.OK).send(makePayment);
+  } catch (error) {
+    console.log(error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error.message);
   }
 }

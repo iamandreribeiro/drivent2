@@ -1,5 +1,5 @@
 import { prisma } from "@/config";
-import { TicketStatus } from "@prisma/client";
+import { ProcessPayment, TicketStatus, TicketType } from "@prisma/client";
 
 async function findFirst() {
   return prisma.event.findFirst();
@@ -80,6 +80,36 @@ async function checkTicketByUserId(ticketId: number) {
   })
 }
 
+async function findFirstTicketType(ticketTypeId: number): Promise<TicketType> {
+  const info = prisma.ticketType.findFirst({
+    where: {
+      id: ticketTypeId
+    }
+  });
+
+  return info;
+}
+
+async function makePayment(payInfo: ProcessPayment) {
+  const arr = payInfo.cardData.number;
+  const cardLastDigits = arr[arr.length-4] + arr[arr.length-3] + arr[arr.length-2] + arr[arr.length-1];
+  const ticket = await checkTicketByUserId(payInfo.ticketId);
+  const ticketType = await findFirstTicketType(ticket.id);
+
+  if(!ticketType) {
+    return 404;
+  }
+
+  return prisma.payment.create({
+    data: {
+      ticketId: payInfo.ticketId,
+      value: ticketType.price,
+      cardIssuer: payInfo.cardData.issuer,
+      cardLastDigits
+    }
+  })
+}
+
 const eventRepository = {
   findFirst,
   findTickets,
@@ -88,7 +118,8 @@ const eventRepository = {
   getTicketsTypesInfo,
   findPaymentInfo,
   findEnrollmentId,
-  checkTicketByUserId
+  checkTicketByUserId,
+  makePayment
 };
 
 export default eventRepository;

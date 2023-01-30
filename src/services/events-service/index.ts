@@ -1,7 +1,7 @@
 import { notFoundError } from "@/errors";
 import eventRepository from "@/repositories/event-repository";
 import { exclude } from "@/utils/prisma-utils";
-import { Event, TicketType } from "@prisma/client";
+import { Event, ProcessPayment, TicketType } from "@prisma/client";
 import dayjs from "dayjs";
 
 async function getFirstEvent(): Promise<GetFirstEventResult> {
@@ -106,13 +106,35 @@ async function getPaymentInfo(ticketId: number, userId: number) {
   return paymentInfo;
 }
 
+async function insertPayment(payInfo: ProcessPayment, userId: number) {
+  if(!payInfo.ticketId || !payInfo.cardData) {
+    return 400;
+  }
+
+  const findTicket = await eventRepository.checkTicketByUserId(payInfo.ticketId);
+  const enrollmentId = await eventRepository.findEnrollmentId(userId);
+
+  if(!findTicket) {
+    return 404;
+  }
+
+  if(findTicket.enrollmentId != enrollmentId) {
+    return 401;
+  }
+
+  const makePayment = await eventRepository.makePayment(payInfo);
+
+  return makePayment;
+}
+
 const eventsService = {
   getFirstEvent,
   isCurrentEventActive,
   getTickets,
   getUserTickets,
   postUserTicket,
-  getPaymentInfo
+  getPaymentInfo,
+  insertPayment
 };
 
 export default eventsService;
