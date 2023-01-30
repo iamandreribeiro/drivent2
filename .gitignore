@@ -4,3 +4,8 @@ node_modules
 !.env.example
 yarn.lock
 .vscode
+tests copy
+src copy
+node_modules copy
+prisma copy
+nginx copy
